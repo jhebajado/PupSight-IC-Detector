@@ -203,11 +203,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void handleOpenImage() {
-    FilePicker.platform.pickFiles(
-        allowMultiple: false,
-        withData: true,
-        type: FileType.image,
-        allowedExtensions: ["jpg", "png"]).then((result) {
+    FilePicker.platform
+        .pickFiles(
+      allowMultiple: false,
+      withData: true,
+      type: FileType.image,
+    )
+        .then((result) {
       if (result != null && result.files.single.bytes != null) {
         final file = result.files.single;
         setState(() {
