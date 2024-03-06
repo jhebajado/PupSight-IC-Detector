@@ -19,6 +19,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late final TabController _tabController;
   final storage = Storage();
   bool deleteMode = false;
+  bool searchMode = false;
+
+  late List<Sample> identified;
+  late List<Sample> pendings;
+
+  TextEditingController searchController = TextEditingController();
 
   HashSet<Classification> classFilters = HashSet();
 
@@ -37,25 +43,50 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _tabController = TabController(length: _tabs.length, vsync: this);
-    initLocalStorage();
-  }
 
-  Future<void> initLocalStorage() async {
-    setState(() {});
+    identified = storage.getIdentified();
+    pendings = storage.getPendings();
   }
 
   @override
   Widget build(BuildContext context) {
-    final identified = storage.getIdentified();
-    final pendings = storage.getPendings();
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text("IC Scanner"),
+        title: searchMode
+            ? SearchBar(
+                controller: searchController,
+                hintText: "Search",
+                onChanged: (_) {
+                  setState(() {
+                    _updateIdentified();
+                    _updatePendings();
+                  });
+                },
+              )
+            : const Text("IC Scanner"),
         centerTitle: true,
+        toolbarHeight: 80,
         actions: [
-          IconButton(
-              onPressed: () {}, icon: const Icon(PhosphorIconsFill.binoculars))
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: IconButton(
+                onPressed: () {
+                  setState(() {
+                    searchMode = !searchMode;
+
+                    if (!searchMode) {
+                      setState(() {
+                        searchController.clear();
+                        _updatePendings();
+                        _updateIdentified();
+                      });
+                    }
+                  });
+                },
+                icon: Icon(searchMode
+                    ? PhosphorIconsBold.prohibit
+                    : PhosphorIconsFill.binoculars)),
+          )
         ],
         bottom: TabBar(
           controller: _tabController,
@@ -86,6 +117,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           deleteSample: () {
                             setState(() {
                               storage.deleteSample(pendings[index].id);
+                              _updateIdentified();
                             });
                           });
                     },
@@ -124,6 +156,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         } else {
                                           classFilters.remove(c);
                                         }
+
+                                        _updateIdentified();
+                                        _updatePendings();
                                       });
                                     },
                                   ))
@@ -145,7 +180,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               showDelete: deleteMode,
                               deleteSample: () {
                                 setState(() {
-                                  storage.deleteSample(pendings[index].id);
+                                  storage.deleteSample(identified[index].id);
+                                  _updatePendings();
                                 });
                               });
                         },
@@ -202,6 +238,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  void _updateIdentified() {
+    identified = storage.getIdentified(
+        keyword: searchController.value.text, classification: classFilters);
+  }
+
+  void _updatePendings() {
+    pendings = storage.getPendings(keyword: searchController.value.text);
+  }
+
   void handleOpenImage() {
     FilePicker.platform
         .pickFiles(
@@ -214,6 +259,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         final file = result.files.single;
         setState(() {
           storage.addSample(file.name, file.bytes!);
+          _updatePendings();
         });
 
         _tabController.animateTo(0);
