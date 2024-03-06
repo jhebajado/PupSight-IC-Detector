@@ -65,13 +65,12 @@ class Storage with ChangeNotifier {
   void addSample(String label, Uint8List imageBytes) {
     var id = _idLookup.length;
 
-    while (_idLookup.contains(id)) {
+    while (!_idLookup.add(id)) {
       id += 1;
     }
 
-    _idLookup.add(id);
     _cache.insert(
-        id, Sample(id: id, label: label, bytes: imageBytes, results: []));
+        0, Sample(id: id, label: label, bytes: imageBytes, results: []));
 
     notifyListeners();
   }
