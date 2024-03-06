@@ -1,6 +1,10 @@
+import 'dart:collection';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:ic_scanner/components/sample_card.dart';
+import 'package:ic_scanner/data/sample.dart';
 import 'package:ic_scanner/data/storage.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -16,6 +20,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late final TabController _tabController;
   final storage = Storage();
   bool deleteMode = false;
+
+  HashSet<Classification> classFilters = HashSet();
 
   static final List<Tab> _tabs = <Tab>[
     const Tab(
@@ -83,24 +89,56 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         });
                   },
                 ),
-                GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 8.0,
-                    mainAxisSpacing: 8.0,
-                    childAspectRatio: 1,
-                  ),
-                  itemCount: identified.length,
-                  itemBuilder: (context, index) {
-                    return SampleCard(
-                        sample: identified[index],
-                        showDelete: deleteMode,
-                        deleteSample: () {
-                          setState(() {
-                            storage.deleteSample(pendings[index].id);
-                          });
-                        });
-                  },
+                Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Wrap(
+                          spacing: 8,
+                          children: Classification.values
+                              .map((c) => FilterChip(
+                                    label: Text(c.label),
+                                    showCheckmark: true,
+                                    selected: classFilters.contains(c),
+                                    selectedColor: c.color,
+                                    backgroundColor: c.color.withAlpha(128),
+
+                                    // color: MaterialStatePropertyAll(c.color),
+                                    onSelected: (isSelected) {
+                                      setState(() {
+                                        if (isSelected) {
+                                          classFilters.add(c);
+                                        } else {
+                                          classFilters.remove(c);
+                                        }
+                                      });
+                                    },
+                                  ))
+                              .toList(growable: false)),
+                    ),
+                    Expanded(
+                      child: GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 8.0,
+                          mainAxisSpacing: 8.0,
+                          childAspectRatio: 1,
+                        ),
+                        itemCount: identified.length,
+                        itemBuilder: (context, index) {
+                          return SampleCard(
+                              sample: identified[index],
+                              showDelete: deleteMode,
+                              deleteSample: () {
+                                setState(() {
+                                  storage.deleteSample(pendings[index].id);
+                                });
+                              });
+                        },
+                      ),
+                    ),
+                  ],
                 )
               ],
             );

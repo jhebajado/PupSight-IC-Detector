@@ -34,13 +34,13 @@ class Storage with ChangeNotifier {
   }
 
   List<Sample> getIdentified(
-      {String? keyword, Classification? classification}) {
+      {String? keyword, HashSet<Classification>? classification}) {
     var result = _cache.where((s) => s.isIdentified).toList();
 
-    if (classification != null) {
-      result.removeWhere((s) =>
-          (s.results.indexWhere((e) => e.classification == classification) ==
-              -1));
+    if (classification != null && classification.isNotEmpty) {
+      result.removeWhere((s) => (s.results
+              .indexWhere((e) => classification.contains(e.classification)) ==
+          -1));
     }
 
     if (keyword != null) {

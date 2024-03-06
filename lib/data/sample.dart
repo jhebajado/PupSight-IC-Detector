@@ -37,10 +37,10 @@ class Result {
 }
 
 enum Classification {
-  hypermature,
+  normal,
   incipient,
   mature,
-  normal,
+  hypermature,
 }
 
 extension ClassificationUi on Classification {
