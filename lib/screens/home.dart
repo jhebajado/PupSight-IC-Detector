@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:ic_scanner/components/sample_card.dart';
 import 'package:ic_scanner/data/sample.dart';
 import 'package:ic_scanner/data/storage.dart';
+import 'package:ic_scanner/screens/camera.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -117,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           deleteSample: () {
                             setState(() {
                               storage.deleteSample(pendings[index].id);
-                              _updateIdentified();
+                              _updatePendings();
                             });
                           });
                     },
@@ -181,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               deleteSample: () {
                                 setState(() {
                                   storage.deleteSample(identified[index].id);
-                                  _updatePendings();
+                                  _updateIdentified();
                                 });
                               });
                         },
@@ -208,7 +209,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
             FloatingActionButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => CameraScreen(
+                            refreshItems: () => {
+                              setState(() {
+                                _updatePendings();
+                              })
+                            },
+                          )),
+                );
+              },
               child: const Icon(
                 PhosphorIconsFill.aperture,
                 color: Colors.white,
