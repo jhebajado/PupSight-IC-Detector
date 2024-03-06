@@ -157,12 +157,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             );
           }),
       bottomSheet: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 32),
         child: Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
           runAlignment: WrapAlignment.center,
           alignment: WrapAlignment.center,
-          spacing: 8,
+          spacing: 32,
           children: [
             FloatingActionButton(
               onPressed: handleOpenImage,
