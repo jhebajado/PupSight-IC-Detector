@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 
 import 'package:file_picker/file_picker.dart';
@@ -115,6 +116,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       return SampleCard(
                           sample: pendings[index],
                           showDelete: deleteMode,
+                          scanSample: () {
+                            final sampleId = pendings[index].id;
+
+                            setState(() {
+                              pendings[index].inferring = true;
+                            });
+
+                            storage.inferSample(sampleId).then((_) {
+                              setState(() {
+                                _updatePendings();
+                                _updateIdentified();
+                              });
+                            });
+                          },
                           deleteSample: () {
                             setState(() {
                               storage.deleteSample(pendings[index].id);

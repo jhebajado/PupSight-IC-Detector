@@ -8,11 +8,13 @@ class SampleCard extends StatelessWidget {
   final Sample sample;
   final bool showDelete;
   final VoidCallback deleteSample;
+  final VoidCallback? scanSample;
 
   const SampleCard(
       {super.key,
       required this.sample,
       required this.deleteSample,
+      this.scanSample,
       this.showDelete = false});
 
   @override
@@ -47,23 +49,31 @@ class SampleCard extends StatelessWidget {
                 alignment: Alignment.topRight,
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: IconButton.filled(
-                    onPressed: () {
-                      if (showDelete) {
-                        deleteSample();
-                      }
-                    },
-                    style: const ButtonStyle(
-                        backgroundColor:
-                            MaterialStatePropertyAll(Colors.white)),
-                    icon: Icon(
-                        showDelete
-                            ? PhosphorIconsFill.trash
-                            : PhosphorIconsFill.scan,
-                        color: showDelete
-                            ? colorScheme.error
-                            : colorScheme.primary),
-                  ),
+                  child: (showDelete)
+                      ? IconButton.filled(
+                          onPressed: () {
+                            deleteSample();
+                          },
+                          style: const ButtonStyle(
+                              backgroundColor:
+                                  MaterialStatePropertyAll(Colors.white)),
+                          icon: Icon(PhosphorIconsFill.trash,
+                              color: colorScheme.error),
+                        )
+                      : (scanSample != null)
+                          ? IconButton.filled(
+                              onPressed: () {
+                                if (scanSample != null) {
+                                  scanSample!();
+                                }
+                              },
+                              style: const ButtonStyle(
+                                  backgroundColor:
+                                      MaterialStatePropertyAll(Colors.white)),
+                              icon: Icon(PhosphorIconsFill.scan,
+                                  color: colorScheme.primary),
+                            )
+                          : null,
                 )),
             Align(
               alignment: Alignment.bottomLeft,

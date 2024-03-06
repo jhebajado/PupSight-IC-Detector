@@ -1,8 +1,12 @@
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:typed_data';
+import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
 import 'package:ic_scanner/data/sample.dart';
+
+const _apiUrl = "http://192.168.100.4:8083";
 
 class Storage with ChangeNotifier {
   static final Storage _instance = Storage._internal();
@@ -79,6 +83,34 @@ class Storage with ChangeNotifier {
     if (_idLookup.remove(id)) {
       _cache.removeWhere((s) => s.id == id);
       notifyListeners();
+    }
+  }
+
+  Future<void> inferSample(int id) async {
+    var url = Uri.parse('$_apiUrl/scan');
+    var request = http.MultipartRequest('POST', url);
+    var item = _cache.firstWhere((s) => s.id == id);
+    request.files.add(
+      http.MultipartFile.fromBytes('image', item.bytes, filename: item.label),
+    );
+
+    try {
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        final items = jsonDecode(utf8.decode(await response.stream.toBytes()))
+            as List<dynamic>;
+
+        final index = _cache.indexWhere((s) => s.id == id);
+
+        if (index >= 0) {
+          _cache[index].results = items.map((e) => Result.fromJson(e)).toList();
+          _cache[index].inferring = false;
+        }
+      } else {
+        throw ('Failed to upload image. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw ('Error uploading image: $e');
     }
   }
 }

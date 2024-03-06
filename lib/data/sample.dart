@@ -4,9 +4,9 @@ import 'dart:ui';
 class Sample {
   final int id;
   final String label;
-  final List<Result> results;
   final Uint8List bytes;
-  final bool inferring;
+  List<Result> results;
+  bool inferring;
 
   Sample(
       {required this.id,
@@ -26,6 +26,7 @@ class Result {
   final int y;
   final int width;
   final int height;
+  final double probability;
 
   Result({
     required this.classification,
@@ -33,7 +34,24 @@ class Result {
     required this.y,
     required this.width,
     required this.height,
+    required this.probability,
   });
+
+  static Result fromJson(Map<String, dynamic> json) {
+    double x1 = json['x1'];
+    double y1 = json['y1'];
+    double x2 = json['x2'];
+    double y2 = json['y2'];
+
+    return Result(
+      x: x1.toInt(),
+      y: y1.toInt(),
+      width: (x2 - x1).toInt(),
+      height: (y2 - y1).toInt(),
+      probability: json['probability'],
+      classification: classFromApi(json['classification']),
+    );
+  }
 }
 
 enum Classification {
@@ -41,6 +59,21 @@ enum Classification {
   incipient,
   mature,
   hypermature,
+}
+
+Classification classFromApi(String value) {
+  switch (value) {
+    case "Hypermature":
+      return Classification.hypermature;
+    case "Normal":
+      return Classification.normal;
+    case "Incipient":
+      return Classification.incipient;
+    case "Mature":
+      return Classification.mature;
+    default:
+      throw "Invalid classification";
+  }
 }
 
 extension ClassificationUi on Classification {
