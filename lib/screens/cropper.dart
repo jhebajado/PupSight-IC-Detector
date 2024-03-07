@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:crop_your_image/crop_your_image.dart';
 import 'package:ic_scanner/data/storage.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class CropperScreen extends StatefulWidget {
   final Uint8List image;
@@ -80,6 +81,22 @@ class _CropperScreenState extends State<CropperScreen> {
         // imageCropper: myCustomImageCropper,
         // imageParser: (image, {format}) {},
       ),
+      bottomSheet: Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          runAlignment: WrapAlignment.center,
+          alignment: WrapAlignment.center,
+          spacing: 32,
+          children: [
+            FloatingActionButton(
+              onPressed: () {
+                _controller.crop();
+              },
+              child: const Icon(
+                PhosphorIconsFill.checkFat,
+                color: Colors.white,
+              ),
+            )
+          ]),
     );
   }
 }
