@@ -1,9 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:ic_scanner/data/storage.dart';
 import 'package:ic_scanner/main.dart';
+import 'package:ic_scanner/screens/cropper.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:image/image.dart' as img;
 
 class CameraScreen extends StatefulWidget {
   final VoidCallback refreshItems;
@@ -17,6 +19,8 @@ class CameraScreen extends StatefulWidget {
 class _CameraScreenState extends State<CameraScreen> {
   late CameraController controller;
   final Storage storage = Storage();
+  String _label = "";
+  Uint8List _data = Uint8List(0);
 
   @override
   void initState() {
@@ -87,11 +91,20 @@ class _CameraScreenState extends State<CameraScreen> {
                             controller.takePicture().then((value) async {
                               final bytes = await value.readAsBytes();
 
-                              storage.addSample(value.name, bytes);
+                              _label = value.name;
+                              _data = bytes;
                             }).whenComplete(() {
                               widget.refreshItems();
 
                               Navigator.of(context).pop();
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => CropperScreen(
+                                        image: _data,
+                                        label: _label,
+                                        refresh: widget.refreshItems)),
+                              );
                             });
                           },
                           child: const Icon(

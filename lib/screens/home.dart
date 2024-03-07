@@ -7,6 +7,7 @@ import 'package:ic_scanner/components/sample_card.dart';
 import 'package:ic_scanner/data/sample.dart';
 import 'package:ic_scanner/data/storage.dart';
 import 'package:ic_scanner/screens/camera.dart';
+import 'package:ic_scanner/screens/cropper.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -286,8 +287,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       if (result != null && result.files.single.bytes != null) {
         final file = result.files.single;
         setState(() {
-          storage.addSample(file.name, file.bytes!);
-          _updatePendings();
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => CropperScreen(
+                    label: file.name,
+                    image: file.bytes!,
+                    refresh: () {
+                      setState(() {
+                        _updatePendings();
+                      });
+                    })),
+          );
         });
 
         _tabController.animateTo(0);
