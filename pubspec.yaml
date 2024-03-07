@@ -16,6 +16,7 @@ dependencies:
   phosphor_flutter: ^2.0.1
   image: ^4.1.7
   http: ^1.2.1
+  crop_your_image: ^1.0.2
 
 dev_dependencies:
   flutter_test:
