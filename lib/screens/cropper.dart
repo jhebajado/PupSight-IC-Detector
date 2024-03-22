@@ -90,6 +90,7 @@ class _CropperScreenState extends State<CropperScreen> {
             FloatingActionButton(
               onPressed: () {
                 _controller.crop();
+                Navigator.of(context).pop();
               },
               child: const Icon(
                 PhosphorIconsFill.checkFat,

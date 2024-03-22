@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -218,7 +219,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           spacing: 32,
           children: [
             FloatingActionButton(
-              onPressed: handleOpenImage,
+              onPressed: () => handleOpenImage(),
               child: const Icon(
                 PhosphorIconsFill.fileArrowUp,
                 color: Colors.white,
@@ -276,6 +277,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     pendings = storage.getPendings(keyword: searchController.value.text);
   }
 
+  // String _label = "";
+  // Uint8List _data = Uint8List(0);
+
   void handleOpenImage() {
     FilePicker.platform
         .pickFiles(
@@ -287,18 +291,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       if (result != null && result.files.single.bytes != null) {
         final file = result.files.single;
         setState(() {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => CropperScreen(
-                    label: file.name,
-                    image: file.bytes!,
-                    refresh: () {
-                      setState(() {
-                        _updatePendings();
-                      });
-                    })),
-          );
+          storage.addSample(file.name, file.bytes!);
+          _updatePendings();
         });
 
         _tabController.animateTo(0);
