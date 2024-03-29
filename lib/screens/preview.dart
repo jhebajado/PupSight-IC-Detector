@@ -24,15 +24,8 @@ class SampleCard extends StatelessWidget {
       final annotationScale = Point(box.maxWidth / 640, box.maxHeight / 640);
       final colorScheme = Theme.of(context).colorScheme;
 
-      return Card(
-        elevation: 5,
-        color: Colors.white,
-        shadowColor: Colors.black26,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Stack(
+      return Scaffold(
+        body: Stack(
           children: [
             Expanded(
               child: ClipRRect(
@@ -102,12 +95,6 @@ class SampleCard extends StatelessWidget {
                         style:
                             const TextStyle(color: Colors.white, fontSize: 16),
                       )),
-                  // if (sample.isIdentified &&
-                  //     sample.results[0].classification !=
-                  //         Classification.unclassified) ...[
-                  //   ClassificationCard(
-                  //       classification: sample.results[0].classification)
-                  // ]
                 ),
               ),
             ),

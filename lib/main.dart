@@ -1,12 +1,15 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:ic_scanner/data/storage.dart';
+import 'package:ic_scanner/screens/home.dart';
+import 'package:ic_scanner/screens/login.dart';
 import 'package:ic_scanner/screens/register.dart';
+import 'package:ic_scanner/api.dart';
 
 late List<CameraDescription> cameras;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await prepareJar();
   cameras = await availableCameras();
   runApp(const MainApp());
 }
@@ -21,10 +24,8 @@ class MainApp extends StatelessWidget {
     const themePurpleLight = Color(0xffDAC1FF);
     const themeBlack = Color(0xff0E0E10);
 
-    Storage.loadData();
-
     return MaterialApp(
-      title: 'IC Scanner',
+      title: 'Pupsight',
       theme: ThemeData(
           primaryColor: themePurple,
           scaffoldBackgroundColor: themeBlack,
@@ -66,7 +67,12 @@ class MainApp extends StatelessWidget {
             fillColor: const Color(0xff0f0f0f),
           )),
       debugShowCheckedModeBanner: false,
-      home: const RegisterScreen(),
+      initialRoute: '/login',
+      routes: {
+        "/home": (ctx) => const HomeScreen(),
+        "/login": (ctx) => const LoginScreen(),
+        "/register": (ctx) => const RegisterScreen(),
+      },
     );
   }
 }

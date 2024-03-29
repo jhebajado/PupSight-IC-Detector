@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:crop_your_image/crop_your_image.dart';
-import 'package:ic_scanner/data/storage.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class CropperScreen extends StatefulWidget {
@@ -23,7 +22,6 @@ class CropperScreen extends StatefulWidget {
 
 class _CropperScreenState extends State<CropperScreen> {
   final _controller = CropController();
-  final storage = Storage();
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +39,7 @@ class _CropperScreenState extends State<CropperScreen> {
         image: widget.image, // Replace _imageData with your actual image data
         controller: _controller,
         onCropped: (imageBytes) {
-          storage.addSample(widget.label, imageBytes);
+          // storage.addSample(widget.label, imageBytes);
           widget.refresh();
         },
         aspectRatio: 1,

@@ -1,14 +1,9 @@
-import 'dart:async';
-import 'dart:collection';
-import 'dart:typed_data';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:ic_scanner/api.dart';
 import 'package:ic_scanner/components/sample_card.dart';
 import 'package:ic_scanner/data/sample.dart';
-import 'package:ic_scanner/data/storage.dart';
 import 'package:ic_scanner/screens/camera.dart';
-import 'package:ic_scanner/screens/cropper.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -21,16 +16,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late final TabController _tabController;
-  final storage = Storage();
   bool deleteMode = false;
   bool searchMode = false;
 
-  late List<Sample> identified;
-  late List<Sample> pendings;
+  late List<Sample> identified = List.empty();
+  late List<Sample> pendings = List.empty();
 
   TextEditingController searchController = TextEditingController();
-
-  HashSet<Classification> classFilters = HashSet();
 
   static final List<Tab> _tabs = <Tab>[
     const Tab(
@@ -48,8 +40,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.initState();
     _tabController = TabController(length: _tabs.length, vsync: this);
 
-    identified = storage.getIdentified();
-    pendings = storage.getPendings();
+    getInferred(null).then((value) {
+      setState(() {
+        identified = value;
+      });
+    });
+
+    getPendings(null).then((value) {
+      setState(() {
+        pendings = value;
+      });
+    });
   }
 
   @override
@@ -67,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   });
                 },
               )
-            : const Text("IC Scanner"),
+            : const Text("Pupsight"),
         centerTitle: true,
         toolbarHeight: 80,
         actions: [
@@ -98,118 +99,79 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           dividerHeight: 0,
         ),
       ),
-      body: ListenableBuilder(
-          listenable: storage,
-          builder: (context, child) {
-            return TabBarView(
-              controller: _tabController,
-              children: [
-                if (pendings.isNotEmpty)
-                  GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 8.0,
-                      mainAxisSpacing: 8.0,
-                      childAspectRatio: 1,
-                    ),
-                    itemCount: pendings.length,
-                    itemBuilder: (context, index) {
-                      return SampleCard(
-                          sample: pendings[index],
-                          showDelete: deleteMode,
-                          scanSample: () {
-                            final sampleId = pendings[index].id;
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          if (pendings.isNotEmpty)
+            GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 8.0,
+                mainAxisSpacing: 8.0,
+                childAspectRatio: 1,
+              ),
+              itemCount: pendings.length,
+              itemBuilder: (context, index) {
+                return SampleCard(
+                    sample: pendings[index],
+                    showDelete: deleteMode,
+                    scanSample: () {
+                      setState(() {
+                        pendings[index].inferring = true;
+                      });
 
-                            setState(() {
-                              pendings[index].inferring = true;
-                            });
-
-                            storage.inferSample(sampleId).then((_) {
-                              setState(() {
-                                _updatePendings();
-                                _updateIdentified();
-                              });
-                            });
-                          },
-                          deleteSample: () {
-                            setState(() {
-                              storage.deleteSample(pendings[index].id);
-                              _updatePendings();
-                            });
-                          });
+                      inferSample(pendings[index].id).whenComplete(() {
+                        _updatePendings();
+                        _updateIdentified();
+                      });
                     },
-                  )
-                else
-                  const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(PhosphorIconsFill.dog,
-                          color: Colors.white70, size: 64),
-                      Text(
-                          "There is nothing here, \n looks like we need new dog pics",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 24, color: Colors.white70))
-                    ],
-                  ),
-                Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Wrap(
-                          spacing: 8,
-                          children: Classification.values
-                              .map((c) => FilterChip(
-                                    label: Text(c.label),
-                                    showCheckmark: true,
-                                    selected: classFilters.contains(c),
-                                    selectedColor: c.color,
-                                    backgroundColor: c.color.withAlpha(128),
-
-                                    // color: MaterialStatePropertyAll(c.color),
-                                    onSelected: (isSelected) {
-                                      setState(() {
-                                        if (isSelected) {
-                                          classFilters.add(c);
-                                        } else {
-                                          classFilters.remove(c);
-                                        }
-
-                                        _updateIdentified();
-                                        _updatePendings();
-                                      });
-                                    },
-                                  ))
-                              .toList(growable: false)),
-                    ),
-                    Expanded(
-                      child: GridView.builder(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 8.0,
-                          mainAxisSpacing: 8.0,
-                          childAspectRatio: 1,
-                        ),
-                        itemCount: identified.length,
-                        itemBuilder: (context, index) {
-                          return SampleCard(
-                              sample: identified[index],
-                              showDelete: deleteMode,
-                              deleteSample: () {
-                                setState(() {
-                                  storage.deleteSample(identified[index].id);
-                                  _updateIdentified();
-                                });
-                              });
-                        },
-                      ),
-                    ),
-                  ],
-                )
+                    deleteSample: () {
+                      deleteSample(pendings[index].id).whenComplete(() {
+                        _updatePendings();
+                        _updateIdentified();
+                      });
+                    });
+              },
+            )
+          else
+            const Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(PhosphorIconsFill.dog, color: Colors.white70, size: 64),
+                Text(
+                    "There is nothing here, \n looks like we need new dog pics",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 24, color: Colors.white70))
               ],
-            );
-          }),
+            ),
+          Column(
+            children: [
+              Expanded(
+                child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 8.0,
+                    mainAxisSpacing: 8.0,
+                    childAspectRatio: 1,
+                  ),
+                  itemCount: identified.length,
+                  itemBuilder: (context, index) {
+                    return SampleCard(
+                        sample: identified[index],
+                        showDelete: deleteMode,
+                        deleteSample: () {
+                          deleteSample(pendings[index].id).whenComplete(() {
+                            _updatePendings();
+                            _updateIdentified();
+                          });
+                        });
+                  },
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
       bottomSheet: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 32),
         child: Wrap(
@@ -218,14 +180,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           alignment: WrapAlignment.center,
           spacing: 32,
           children: [
-            FloatingActionButton(
+            IconButton(
               onPressed: () => handleOpenImage(),
-              child: const Icon(
+              icon: const Icon(
                 PhosphorIconsFill.fileArrowUp,
                 color: Colors.white,
               ),
             ),
-            FloatingActionButton(
+            IconButton(
               onPressed: () {
                 Navigator.push(
                   context,
@@ -239,21 +201,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           )),
                 );
               },
-              child: const Icon(
+              icon: const Icon(
                 PhosphorIconsFill.aperture,
                 color: Colors.white,
               ),
             ),
-            FloatingActionButton(
+            IconButton(
               onPressed: () {
                 setState(() {
                   deleteMode = !deleteMode;
                 });
               },
-              backgroundColor: deleteMode
+              color: deleteMode
                   ? Colors.white
                   : Theme.of(context).colorScheme.error,
-              child: Icon(
+              icon: Icon(
                 deleteMode
                     ? PhosphorIconsFill.prohibit
                     : PhosphorIconsFill.trash,
@@ -269,16 +231,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _updateIdentified() {
-    identified = storage.getIdentified(
-        keyword: searchController.value.text, classification: classFilters);
+    getInferred(searchController.value.text).then((value) {
+      setState(() {
+        identified = value;
+      });
+    });
   }
 
   void _updatePendings() {
-    pendings = storage.getPendings(keyword: searchController.value.text);
+    getPendings(searchController.value.text).then((value) {
+      setState(() {
+        identified = value;
+      });
+    });
   }
-
-  // String _label = "";
-  // Uint8List _data = Uint8List(0);
 
   void handleOpenImage() {
     FilePicker.platform
@@ -290,11 +256,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         .then((result) {
       if (result != null && result.files.single.bytes != null) {
         final file = result.files.single;
-        setState(() {
-          storage.addSample(file.name, file.bytes!);
-          _updatePendings();
-        });
+        uploadSample(file.name, file.bytes!);
 
+        _updatePendings();
         _tabController.animateTo(0);
       }
     });
