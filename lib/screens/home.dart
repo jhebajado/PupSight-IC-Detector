@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:ic_scanner/components/sample_card.dart';
 import 'package:ic_scanner/data/storage.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,11 +19,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   static final List<Tab> _tabs = <Tab>[
     const Tab(
       text: "Pending",
-      icon: Icon(Icons.pending_actions_rounded),
+      icon: Icon(PhosphorIconsFill.imagesSquare),
     ),
     const Tab(
       text: "Identified",
-      icon: Icon(Icons.location_searching_rounded),
+      icon: Icon(PhosphorIconsFill.target),
     )
   ];
 
@@ -47,7 +48,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         title: const Text("IC Scanner"),
         centerTitle: true,
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.search_rounded))
+          IconButton(
+              onPressed: () {}, icon: const Icon(PhosphorIconsFill.binoculars))
         ],
         bottom: TabBar(
           controller: _tabController,
@@ -96,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: FloatingActionButton(
               onPressed: handleOpenImage,
               child: const Icon(
-                Icons.upload_rounded,
+                PhosphorIconsFill.fileArrowUp,
                 color: Colors.white,
               ),
             ),
@@ -106,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: FloatingActionButton(
               onPressed: () {},
               child: const Icon(
-                Icons.camera,
+                PhosphorIconsFill.aperture,
                 color: Colors.white,
               ),
             ),
@@ -117,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               onPressed: () {},
               backgroundColor: Theme.of(context).colorScheme.error,
               child: const Icon(
-                Icons.delete_rounded,
+                PhosphorIconsFill.trash,
                 color: Colors.white,
               ),
             ),
@@ -138,6 +140,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         setState(() {
           storage.addSample(file.name, file.bytes!);
         });
+
+        _tabController.animateTo(0);
       }
     });
   }

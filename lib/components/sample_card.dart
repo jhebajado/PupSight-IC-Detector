@@ -2,12 +2,13 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:ic_scanner/data/sample.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class SampleCard extends StatelessWidget {
   final Sample sample;
-  final bool? showDelete;
+  final bool showDelete;
 
-  const SampleCard({super.key, required this.sample, this.showDelete});
+  const SampleCard({super.key, required this.sample, this.showDelete = false});
 
   @override
   Widget build(BuildContext context) {
@@ -24,27 +25,41 @@ class SampleCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: Stack(
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(8.0)),
-                    child: Image.memory(
-                      sample.bytes,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: double.infinity,
-                    ),
-                  ),
+            Expanded(
+              child: ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(8.0)),
+                child: Image.memory(
+                  sample.bytes,
+                  fit: BoxFit.fitHeight,
+                  width: box.maxWidth,
+                  height: box.maxHeight,
                 ),
-              ],
+              ),
             ),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
+            Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: showDelete
+                      ? IconButton.filled(
+                          onPressed: () {},
+                          style: const ButtonStyle(
+                              backgroundColor:
+                                  MaterialStatePropertyAll(Colors.white)),
+                          icon: Icon(PhosphorIconsFill.trash,
+                              color: Theme.of(context).colorScheme.error),
+                        )
+                      : IconButton.filled(
+                          onPressed: () {},
+                          style: const ButtonStyle(
+                              backgroundColor:
+                                  MaterialStatePropertyAll(Colors.white)),
+                          icon: Icon(PhosphorIconsFill.scan,
+                              color: Theme.of(context).colorScheme.primary)),
+                )),
+            Align(
+              alignment: Alignment.bottomLeft,
               child: Container(
                 height: 80,
                 decoration: BoxDecoration(
@@ -59,37 +74,22 @@ class SampleCard extends StatelessWidget {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      if (showDelete == true) ...[
-                        IconButton.filled(
-                            onPressed: () => {},
-                            style: const ButtonStyle(
-                                backgroundColor: MaterialStatePropertyAll(
-                                    Color(0xffe84037))),
-                            icon: const Icon(
-                              Icons.delete,
-                              color: Colors.white,
-                            ))
-                      ],
-                      Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 5),
-                          child: Text(
-                            sample.label,
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 16),
-                          )),
-                      // if (sample.isIdentified &&
-                      //     sample.results[0].classification !=
-                      //         Classification.unclassified) ...[
-                      //   ClassificationCard(
-                      //       classification: sample.results[0].classification)
-                      // ]
-                    ],
-                  ),
+                  child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 5),
+                      child: Text(
+                        sample.label,
+                        overflow: TextOverflow.fade,
+                        softWrap: false,
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 16),
+                      )),
+                  // if (sample.isIdentified &&
+                  //     sample.results[0].classification !=
+                  //         Classification.unclassified) ...[
+                  //   ClassificationCard(
+                  //       classification: sample.results[0].classification)
+                  // ]
                 ),
               ),
             ),
