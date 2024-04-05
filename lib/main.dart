@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ic_scanner/data/storage.dart';
 import 'package:ic_scanner/screens/home.dart';
 
 void main() {
@@ -14,6 +15,8 @@ class MainApp extends StatelessWidget {
     const themeRed = Color(0xffe84037);
     const themePurpleLight = Color(0xffDAC1FF);
     const themeBlack = Color(0xff0E0E10);
+
+    Storage.loadData();
 
     return MaterialApp(
       title: 'IC Scanner',

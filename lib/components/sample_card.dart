@@ -82,12 +82,12 @@ class SampleCard extends StatelessWidget {
                             style: const TextStyle(
                                 color: Colors.white, fontSize: 16),
                           )),
-                      if (sample.isIdentified &&
-                          sample.results[0].classification !=
-                              Classification.unclassified) ...[
-                        ClassificationCard(
-                            classification: sample.results[0].classification)
-                      ]
+                      // if (sample.isIdentified &&
+                      //     sample.results[0].classification !=
+                      //         Classification.unclassified) ...[
+                      //   ClassificationCard(
+                      //       classification: sample.results[0].classification)
+                      // ]
                     ],
                   ),
                 ),

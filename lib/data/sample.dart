@@ -13,6 +13,7 @@ class Sample {
       required this.results,
       this.inferring = false});
 
+  bool get isPending => results.isEmpty;
   bool get isIdentified => results.isNotEmpty;
 }
 
@@ -34,7 +35,6 @@ class Result {
 }
 
 enum Classification {
-  unclassified,
   hypermature,
   incipient,
   mature,
