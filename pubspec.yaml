@@ -12,6 +12,7 @@ dependencies:
   camera: ^0.10.5+9
   path_provider: ^2.1.2
   localstorage: ^4.0.1+4
+  file_picker: ^8.0.0+1
 
 dev_dependencies:
   flutter_test:
