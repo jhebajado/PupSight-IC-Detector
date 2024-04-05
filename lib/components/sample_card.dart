@@ -7,13 +7,19 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 class SampleCard extends StatelessWidget {
   final Sample sample;
   final bool showDelete;
+  final VoidCallback deleteSample;
 
-  const SampleCard({super.key, required this.sample, this.showDelete = false});
+  const SampleCard(
+      {super.key,
+      required this.sample,
+      required this.deleteSample,
+      this.showDelete = false});
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, box) {
       final annotationScale = Point(box.maxWidth / 640, box.maxHeight / 640);
+      final colorScheme = Theme.of(context).colorScheme;
 
       return Card(
         elevation: 5,
@@ -41,22 +47,23 @@ class SampleCard extends StatelessWidget {
                 alignment: Alignment.topRight,
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: showDelete
-                      ? IconButton.filled(
-                          onPressed: () {},
-                          style: const ButtonStyle(
-                              backgroundColor:
-                                  MaterialStatePropertyAll(Colors.white)),
-                          icon: Icon(PhosphorIconsFill.trash,
-                              color: Theme.of(context).colorScheme.error),
-                        )
-                      : IconButton.filled(
-                          onPressed: () {},
-                          style: const ButtonStyle(
-                              backgroundColor:
-                                  MaterialStatePropertyAll(Colors.white)),
-                          icon: Icon(PhosphorIconsFill.scan,
-                              color: Theme.of(context).colorScheme.primary)),
+                  child: IconButton.filled(
+                    onPressed: () {
+                      if (showDelete) {
+                        deleteSample();
+                      }
+                    },
+                    style: const ButtonStyle(
+                        backgroundColor:
+                            MaterialStatePropertyAll(Colors.white)),
+                    icon: Icon(
+                        showDelete
+                            ? PhosphorIconsFill.trash
+                            : PhosphorIconsFill.scan,
+                        color: showDelete
+                            ? colorScheme.error
+                            : colorScheme.primary),
+                  ),
                 )),
             Align(
               alignment: Alignment.bottomLeft,

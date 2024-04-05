@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,8 @@ class Storage with ChangeNotifier {
   // static final LocalStorage _localStorage = LocalStorage("samples");
 
   final List<Sample> _cache = [];
+  final HashSet<int> _idLookup = HashSet<int>();
+
   bool _isLoaded = false;
 
   factory Storage() {
@@ -60,7 +63,23 @@ class Storage with ChangeNotifier {
   }
 
   void addSample(String label, Uint8List imageBytes) {
-    _cache.insert(0, Sample(label: label, bytes: imageBytes, results: []));
+    var id = _idLookup.length;
+
+    while (_idLookup.contains(id)) {
+      id += 1;
+    }
+
+    _idLookup.add(id);
+    _cache.insert(
+        id, Sample(id: id, label: label, bytes: imageBytes, results: []));
+
     notifyListeners();
+  }
+
+  void deleteSample(int id) {
+    if (_idLookup.remove(id)) {
+      _cache.removeWhere((s) => s.id == id);
+      notifyListeners();
+    }
   }
 }

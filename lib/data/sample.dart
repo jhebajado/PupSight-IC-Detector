@@ -2,13 +2,15 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 class Sample {
+  final int id;
   final String label;
   final List<Result> results;
   final Uint8List bytes;
   final bool inferring;
 
   Sample(
-      {required this.label,
+      {required this.id,
+      required this.label,
       required this.bytes,
       required this.results,
       this.inferring = false});

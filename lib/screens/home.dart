@@ -15,6 +15,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late final TabController _tabController;
   final storage = Storage();
+  bool deleteMode = false;
 
   static final List<Tab> _tabs = <Tab>[
     const Tab(
@@ -72,7 +73,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   itemCount: pendings.length,
                   itemBuilder: (context, index) {
-                    return SampleCard(sample: pendings[index]);
+                    return SampleCard(
+                        sample: pendings[index],
+                        showDelete: deleteMode,
+                        deleteSample: () {
+                          setState(() {
+                            storage.deleteSample(pendings[index].id);
+                          });
+                        });
                   },
                 ),
                 GridView.builder(
@@ -84,7 +92,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   itemCount: identified.length,
                   itemBuilder: (context, index) {
-                    return SampleCard(sample: identified[index]);
+                    return SampleCard(
+                        sample: identified[index],
+                        showDelete: deleteMode,
+                        deleteSample: () {
+                          setState(() {
+                            storage.deleteSample(pendings[index].id);
+                          });
+                        });
                   },
                 )
               ],
@@ -116,11 +131,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: FloatingActionButton(
-              onPressed: () {},
-              backgroundColor: Theme.of(context).colorScheme.error,
-              child: const Icon(
-                PhosphorIconsFill.trash,
-                color: Colors.white,
+              onPressed: () {
+                setState(() {
+                  deleteMode = !deleteMode;
+                });
+              },
+              backgroundColor: deleteMode
+                  ? Colors.white
+                  : Theme.of(context).colorScheme.error,
+              child: Icon(
+                deleteMode
+                    ? PhosphorIconsFill.prohibit
+                    : PhosphorIconsFill.trash,
+                color: deleteMode
+                    ? Theme.of(context).colorScheme.error
+                    : Colors.white,
               ),
             ),
           )
