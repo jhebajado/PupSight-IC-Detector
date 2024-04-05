@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:ic_scanner/components/sample_card.dart';
 import 'package:ic_scanner/data/storage.dart';
@@ -12,6 +13,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late final TabController _tabController;
+  final storage = Storage();
 
   static final List<Tab> _tabs = <Tab>[
     const Tab(
@@ -37,8 +39,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final storage = Storage();
-
     final identified = storage.getIdentified();
     final pendings = storage.getPendings();
 
@@ -94,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: FloatingActionButton(
-              onPressed: () {},
+              onPressed: handleOpenImage,
               child: const Icon(
                 Icons.upload_rounded,
                 color: Colors.white,
@@ -125,5 +125,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ],
       ),
     );
+  }
+
+  void handleOpenImage() {
+    FilePicker.platform.pickFiles(
+        allowMultiple: false,
+        withData: true,
+        type: FileType.image,
+        allowedExtensions: ["jpg", "png"]).then((result) {
+      if (result != null && result.files.single.bytes != null) {
+        final file = result.files.single;
+        setState(() {
+          storage.addSample(file.name, file.bytes!);
+        });
+      }
+    });
   }
 }

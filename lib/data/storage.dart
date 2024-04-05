@@ -1,15 +1,14 @@
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:ic_scanner/data/sample.dart';
-import 'package:localstorage/localstorage.dart';
 
 class Storage with ChangeNotifier {
   static final Storage _instance = Storage._internal();
-  static final LocalStorage _localStorage = LocalStorage("samples");
+  // static final LocalStorage _localStorage = LocalStorage("samples");
 
-  List<Sample> _cache = [];
-  bool isLoaded = false;
+  final List<Sample> _cache = [];
+  bool _isLoaded = false;
 
   factory Storage() {
     return _instance;
@@ -18,52 +17,15 @@ class Storage with ChangeNotifier {
   Storage._internal();
 
   static void loadData() {
-    if (!_instance.isLoaded) {
+    if (!_instance._isLoaded) {
       _instance._loadData().then((value) {});
     }
   }
 
   Future<void> _loadData() async {
-    final myUri = Uri.parse("/home/ferrox/Pictures/New Folder (2)/normal4.jpg");
-    final image = File.fromUri(myUri);
-    final bytes = await image.readAsBytes();
+    // todo
 
-    _cache = [
-      Sample(label: "Super eyes", bytes: bytes, results: [
-        Result(
-            classification: Classification.hypermature,
-            x: 128,
-            y: 128,
-            width: 328,
-            height: 264)
-      ]),
-      Sample(label: "Super eyes1", bytes: bytes, results: [
-        Result(
-            classification: Classification.normal,
-            x: 128,
-            y: 128,
-            width: 328,
-            height: 264)
-      ]),
-      Sample(label: "Super 12", bytes: bytes, results: [
-        Result(
-            classification: Classification.mature,
-            x: 128,
-            y: 128,
-            width: 328,
-            height: 264),
-        Result(
-            classification: Classification.incipient,
-            x: 180,
-            y: 96,
-            width: 328,
-            height: 264)
-      ]),
-      Sample(label: "Super eyes2", bytes: bytes, inferring: true, results: []),
-      Sample(label: "Super eyes2", bytes: bytes, results: [])
-    ];
-
-    isLoaded = true;
+    _isLoaded = true;
 
     notifyListeners();
   }
@@ -95,5 +57,10 @@ class Storage with ChangeNotifier {
     }
 
     return result;
+  }
+
+  void addSample(String label, Uint8List imageBytes) {
+    _cache.insert(0, Sample(label: label, bytes: imageBytes, results: []));
+    notifyListeners();
   }
 }
