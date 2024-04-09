@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:crop_your_image/crop_your_image.dart';
+import 'package:ic_scanner/api.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class CropperScreen extends StatefulWidget {
@@ -39,8 +40,9 @@ class _CropperScreenState extends State<CropperScreen> {
         image: widget.image, // Replace _imageData with your actual image data
         controller: _controller,
         onCropped: (imageBytes) {
-          // storage.addSample(widget.label, imageBytes);
-          widget.refresh();
+          uploadSample(widget.label, imageBytes).whenComplete(() {
+            widget.refresh();
+          });
         },
         aspectRatio: 1,
         initialRectBuilder: (rect, _) {
@@ -60,12 +62,7 @@ class _CropperScreenState extends State<CropperScreen> {
         maskColor: Colors.white.withAlpha(100),
         progressIndicator: const CircularProgressIndicator(),
         radius: 20,
-        onMoved: (newRect) {
-          // do something with current crop rect.
-        },
-        onStatusChanged: (status) {
-          // do something with current CropStatus
-        },
+
         willUpdateScale: (newScale) {
           // if returning false, scaling will be canceled
           return newScale < 5;

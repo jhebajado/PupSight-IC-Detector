@@ -4,6 +4,8 @@ import 'package:ic_scanner/api.dart';
 import 'package:ic_scanner/components/sample_card.dart';
 import 'package:ic_scanner/data/sample.dart';
 import 'package:ic_scanner/screens/camera.dart';
+import 'package:ic_scanner/screens/cropper.dart';
+import 'package:ic_scanner/screens/preview.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -53,6 +55,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
+  void openPreview(Sample sample, VoidCallback deleteSample) {
+    Navigator.push(context, MaterialPageRoute(builder: (ctx) {
+      return SamplePreview(
+        sample: sample,
+        deleteSample: deleteSample,
+      );
+    }));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,10 +73,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 controller: searchController,
                 hintText: "Search",
                 onChanged: (_) {
-                  setState(() {
-                    _updateIdentified();
-                    _updatePendings();
-                  });
+                  _updateIdentified();
+                  _updatePendings();
                 },
               )
             : const Text("Pupsight"),
@@ -115,6 +124,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 return SampleCard(
                     sample: pendings[index],
                     showDelete: deleteMode,
+                    openPreview: () => openPreview(pendings[index], () {
+                          deleteSample(pendings[index].id).whenComplete(() {
+                            _updatePendings();
+                            _updateIdentified();
+                          });
+                        }),
                     scanSample: () {
                       setState(() {
                         pendings[index].inferring = true;
@@ -159,8 +174,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     return SampleCard(
                         sample: identified[index],
                         showDelete: deleteMode,
+                        openPreview: () => openPreview(identified[index], () {
+                              deleteSample(identified[index].id)
+                                  .whenComplete(() {
+                                _updatePendings();
+                                _updateIdentified();
+                              });
+                            }),
                         deleteSample: () {
-                          deleteSample(pendings[index].id).whenComplete(() {
+                          deleteSample(identified[index].id).whenComplete(() {
                             _updatePendings();
                             _updateIdentified();
                           });
@@ -193,10 +215,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   context,
                   MaterialPageRoute(
                       builder: (context) => CameraScreen(
-                            refreshItems: () => {
-                              setState(() {
-                                _updatePendings();
-                              })
+                            refreshItems: () {
+                              _updatePendings();
                             },
                           )),
                 );
@@ -241,7 +261,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _updatePendings() {
     getPendings(searchController.value.text).then((value) {
       setState(() {
-        identified = value;
+        pendings = value;
       });
     });
   }
@@ -253,13 +273,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       withData: true,
       type: FileType.image,
     )
-        .then((result) {
+        .then((result) async {
       if (result != null && result.files.single.bytes != null) {
         final file = result.files.single;
-        uploadSample(file.name, file.bytes!);
 
-        _updatePendings();
-        _tabController.animateTo(0);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CropperScreen(
+                image: file.bytes!,
+                label: file.name,
+                refresh: () {
+                  _updatePendings();
+                  _tabController.animateTo(0);
+                }),
+          ),
+        );
       }
     });
   }

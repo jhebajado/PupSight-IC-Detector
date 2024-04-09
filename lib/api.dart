@@ -24,7 +24,7 @@ Future<void> prepareJar() async {
 }
 
 String getSampleUrl(String id) {
-  return "$_apiUrl/users/image";
+  return "$_apiUrl/samples/image?sample_id=$id";
 }
 
 Future<Response<dynamic>> userRegister(
@@ -53,27 +53,32 @@ Future<Response<dynamic>> checkUser() async {
 Future<List<Sample>> getInferred(String? keyword) async {
   final res = await dio
       .get("/samples/infers", queryParameters: {"page": 0, "keyword": keyword});
-  dynamic items = res.data?.items;
+  dynamic items = res.data?["items"];
 
   if (items == null) {
     return List.empty();
   }
 
-  List<Sample> samples = items.map((entry) {
-    return Sample(
-        id: entry["id"],
-        label: entry["label"],
-        results: entry["result"].map((r) {
-          return Result(
-              id: r["id"],
-              x: r["x"],
-              y: r["y"],
-              width: r["width"],
-              height: r["height"],
-              certainty: r["certainty"],
-              isNormal: r["is_normal"]);
-        }));
-  });
+  if (items.isEmpty) {
+    return List.empty();
+  }
+
+  List<Sample> samples = List.from(items.map((entry) {
+    List<dynamic> dynamicResults = entry["results"];
+
+    List<Result> results = List.from(dynamicResults.map((r) {
+      return Result(
+          id: r["id"],
+          x: r["x"].toInt(),
+          y: r["y"].toInt(),
+          width: r["width"].toInt(),
+          height: r["height"].toInt(),
+          certainty: r["certainty"],
+          isNormal: r["is_normal"]);
+    }), growable: false);
+
+    return Sample(id: entry["id"], label: entry["label"], results: results);
+  }), growable: false);
 
   return samples;
 }
@@ -81,16 +86,20 @@ Future<List<Sample>> getInferred(String? keyword) async {
 Future<List<Sample>> getPendings(String? keyword) async {
   final res = await dio.get("/samples/pendings",
       queryParameters: {"page": 0, "keyword": keyword});
-  dynamic items = res.data?.items;
+  List<dynamic>? items = res.data?["items"];
 
   if (items == null) {
     return List.empty();
   }
 
-  List<Sample> samples = items.map((entry) {
+  if (items.isEmpty) {
+    return List.empty();
+  }
+
+  List<Sample> samples = List.from(items.map((entry) {
     return Sample(
         id: entry["id"], label: entry["label"], results: List.empty());
-  });
+  }), growable: false);
 
   return samples;
 }
@@ -104,7 +113,8 @@ Future<Response<dynamic>> uploadSample(String filename, Uint8List bytes) async {
 }
 
 Future<Response<dynamic>> deleteSample(String id) async {
-  return await dio.post("/samples/pendings", data: {"sample_id": id});
+  return await dio
+      .delete("/samples/delete", queryParameters: {"sample_id": id});
 }
 
 Future<Response<dynamic>> inferSample(String id) async {

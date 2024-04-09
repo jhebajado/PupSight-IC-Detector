@@ -11,8 +11,12 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _loginNameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _loginNameController =
+      TextEditingController(text: "John");
+  final TextEditingController _passwordController =
+      TextEditingController(text: "secret123");
+
+  bool _loading = false;
 
   void _toHome() {
     // Ensure navigation is performed on the main thread
@@ -69,37 +73,47 @@ class _LoginScreenState extends State<LoginScreen> {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(8, 52, 8, 8),
                       child: SizedBox(
-                        height: 42,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            _toHome();
-                            if (_formKey.currentState!.validate()) {
-                              userLogin(
-                                      loginName: _loginNameController.text,
-                                      password: _passwordController.text)
-                                  .then((res) {
-                                if (res.statusCode == 200) {
-                                } else if (res.statusCode == 401) {
-                                  const snackBar = SnackBar(
-                                    content: Text('Invalid credentials'),
-                                  );
+                          height: 42,
+                          child: ElevatedButton(
+                              onPressed: () {
+                                if (_formKey.currentState!.validate()) {
+                                  setState(() {
+                                    _loading = true;
+                                  });
+                                  userLogin(
+                                          loginName: _loginNameController.text,
+                                          password: _passwordController.text)
+                                      .then((res) {
+                                    if (res.statusCode == 200) {
+                                      _loading = false;
+                                      _toHome();
+                                    } else if (res.statusCode == 401) {
+                                      const snackBar = SnackBar(
+                                        content: Text('Invalid credentials'),
+                                      );
 
-                                  ScaffoldMessenger.of(context)
-                                      .showSnackBar(snackBar);
-                                } else {
-                                  const snackBar = SnackBar(
-                                    content: Text('Server Error'),
-                                  );
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(snackBar);
+                                    } else {
+                                      const snackBar = SnackBar(
+                                        content: Text('Server Error'),
+                                      );
 
-                                  ScaffoldMessenger.of(context)
-                                      .showSnackBar(snackBar);
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(snackBar);
+                                    }
+                                  }).whenComplete(() {
+                                    setState(() {
+                                      _loading = false;
+                                    });
+                                  });
                                 }
-                              });
-                            }
-                          },
-                          child: const Text('Login'),
-                        ),
-                      ),
+                              },
+                              child: _loading
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.white,
+                                    )
+                                  : const Text("Login"))),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8),

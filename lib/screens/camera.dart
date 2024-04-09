@@ -17,8 +17,8 @@ class CameraScreen extends StatefulWidget {
 
 class _CameraScreenState extends State<CameraScreen> {
   late CameraController controller;
-  String _label = "";
-  Uint8List _data = Uint8List(0);
+  Uint8List? _data;
+  String? _label;
 
   @override
   void initState() {
@@ -43,6 +43,13 @@ class _CameraScreenState extends State<CameraScreen> {
       }
     });
   }
+
+  // void openCrop() {
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+
+  //     widget.refreshItems();
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -102,24 +109,21 @@ class _CameraScreenState extends State<CameraScreen> {
                 ),
                 FloatingActionButton(
                   onPressed: () {
-                    controller.takePicture().then((value) async {
-                      final bytes = await value.readAsBytes();
+                    controller.takePicture().then((xfile) {
+                      _label = xfile.name;
+                      xfile.readAsBytes().then((bytes) {
+                        _data = bytes;
 
-                      _label = value.name;
-                      _data = bytes;
-                    }).whenComplete(() {
-                      widget.refreshItems();
-
-                      Navigator.of(context).pop();
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CropperScreen(
-                              image: _data,
-                              label: _label,
-                              refresh: widget.refreshItems),
-                        ),
-                      );
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CropperScreen(
+                                image: _data!,
+                                label: _label!,
+                                refresh: widget.refreshItems),
+                          ),
+                        );
+                      });
                     });
                   },
                   child: const Icon(

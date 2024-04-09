@@ -16,7 +16,7 @@ class Sample {
 
 class Result {
   final String id;
-  final String certainty;
+  final double certainty;
   final bool isNormal;
   final int x;
   final int y;
