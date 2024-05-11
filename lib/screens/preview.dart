@@ -61,14 +61,16 @@ class SamplePreview extends StatelessWidget {
                                   width: 4,
                                 )),
                           ),
-                          Positioned(
-                            left: 12,
-                            top: 12,
-                            child: Text(
-                              '${result.isNormal ? "NORMAL" : "INCIPIENT"}\nArea: ${(result.width.toDouble() / 2 * result.height.toDouble() / 2 * pi).round()} squared pixels\nX: ${result.x + result.width / 2}\nY: ${result.y + result.height / 2}',
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                          ),
+                          if (!result.isNormal) ...[
+                            Positioned(
+                              left: 12,
+                              top: 12,
+                              child: Text(
+                                'INCIPIENT\nArea: ${(result.width.toDouble() / 2 * result.height.toDouble() / 2 * pi).round()} squared pixels\nX: ${result.x + result.width / 2}\nY: ${result.y + result.height / 2}',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            )
+                          ]
                         ],
                       ),
                     )),
