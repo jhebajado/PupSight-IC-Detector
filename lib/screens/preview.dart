@@ -66,8 +66,17 @@ class SamplePreview extends StatelessWidget {
                               left: 12,
                               top: 12,
                               child: Text(
-                                'INCIPIENT\nArea: ${(result.width.toDouble() / 2 * result.height.toDouble() / 2 * pi).round()} squared pixels\nX: ${result.x + result.width / 2}\nY: ${result.y + result.height / 2}',
+                                'INCIPIENT\nX: ${result.x + result.width / 2}\nY: ${result.y + result.height / 2}',
                                 style: const TextStyle(color: Colors.white),
+                              ),
+                            )
+                          ] else ...[
+                            const Positioned(
+                              left: 12,
+                              top: 12,
+                              child: Text(
+                                'NORMAL',
+                                style: TextStyle(color: Colors.white),
                               ),
                             )
                           ]
